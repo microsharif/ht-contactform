@@ -115,7 +115,7 @@ class Inspector extends Component {
 								height: ${inputHight.desktop}px;
 						}
 
-						#ht-editor-bock-${blockUniqId} #wpcf7-f${formId}-o1.wpcf7 input:not([type=checkbox],[type=submit]),
+						#ht-editor-bock-${blockUniqId} #wpcf7-f${formId}-o1.wpcf7 input:not([type=checkbox]):not([type=submit]),
 						#ht-editor-bock-${blockUniqId} #wpcf7-f${formId}-o1.wpcf7 textarea{
 							font-size: ${attributes.inputTextSize.desktop};
 							background:${attributes.inputBackground};

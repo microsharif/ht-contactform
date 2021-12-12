@@ -4,7 +4,7 @@ namespace HtContactForm\Block;
 
 
 /**
- * analytical data store
+ * Contact Form Block
 */
 class Contactform_Block 
 {
@@ -21,14 +21,17 @@ class Contactform_Block
     public static function instance() {
         if ( is_null( self::$_instance ) ) {
             self::$_instance = new self();
+            self::$_instance->define_constants();
         }
         return self::$_instance;
     }
 
 	/**
 	 * The Constructor.
-	 */
+	*/
 	public function __construct() {
+		add_action( 'enqueue_block_assets', [ $this, 'block_assets' ] );
+		add_action( 'enqueue_block_editor_assets', [ $this, 'block_editor_assets' ] );
 		add_action( 'init', [ $this, 'init' ] );
 		add_action( 'rest_api_init', [ $this, 'register_api' ] );
 	}
@@ -39,40 +42,34 @@ class Contactform_Block
 		if ( ! function_exists( 'register_block_type' ) ) {
 			return;
 		}
-
-		$this->register_block_script();
 		$this->register_block();
 
 	}
 
-	private function register_block_script(){
-		// Register block styles for both frontend + backend.
-		wp_register_style(
-			'ht-contactform-block-style-css',
-			plugins_url( '../dist/blocks.style.build.css', dirname( __FILE__ ) ), 
-			is_admin() ? array( 'wp-editor' ) : null, 
-			null 
+	/**
+	 * Block assets.
+	 */
+	public function block_assets() {
+
+		$dependencies = require_once( HTCONTACTFORM_BLOCK_PATH . '/build/htcontactform-block.asset.php' );
+
+		wp_enqueue_script(
+		    'ht-contactform-blocks',
+		    HTCONTACTFORM_BLOCK_URL . '/build/htcontactform-block.js',
+		    $dependencies['dependencies'],
+		    $dependencies['version'],
+		    true
 		);
 
-		// Register block editor script for backend.
-		wp_register_script(
-			'ht-contactform-block-block-js',
-			plugins_url( '../dist/blocks.build.js', dirname( __FILE__ ) ), 
-			array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ), 
-			null, 
-			true
-		);
-
-		// Register block editor styles for backend.
-		wp_register_style(
-			'ht-contactform-block-block-editor-css', 
-			plugins_url( '../dist/blocks.editor.build.css', dirname( __FILE__ ) ), 
-			array( 'wp-edit-blocks' ),
-			null 
+		wp_enqueue_style(
+		    'ht-contactform-block-style',
+		    HTCONTACTFORM_BLOCK_URL . '/src/assets/css/style-index.css',
+		    array(),
+		    HTCONTACTFORM_VERSION
 		);
 
 		wp_localize_script(
-			'ht-contactform-block-block-js',
+			'ht-contactform-blocks',
 			'htcontactdata',
 			[
 				'pluginDirPath'   	=> plugin_dir_path( __DIR__ ),
@@ -80,24 +77,54 @@ class Contactform_Block
 				'security' 			=> wp_create_nonce('htcontactform-nonce'),
 			]
 		);
+
+	}
+
+	/**
+	 * Block editor assets.
+	 */
+	public function block_editor_assets() {
+		wp_enqueue_style( 'ht-contactform-block-editor-style', HTCONTACTFORM_BLOCK_URL . '/src/assets/css/editor-style.css', false, HTCONTACTFORM_VERSION, 'all' );
 	}
 
 	private function register_block(){
 
 		ob_start();
-		include HTCONTACTFORM_PL_PATH . '/blocks/src/ht-contactform-block/block.json';
+		include HTCONTACTFORM_BLOCK_PATH . '/src/ht-contactform-block/block.json';
 		$attributes = json_decode( ob_get_clean(), true );
 
 		register_block_type(
 			'block/ht-contactform', array(
-				'style'           => 'ht-contactform-block-style-css',
-				'editor_script'   => 'ht-contactform-block-block-js',
-				'editor_style'    => 'ht-contactform-block-block-editor-css',
 				'render_callback' => [ $this, 'render_content' ],
 				'attributes'  	  => $attributes,
 			)
 		);
 	}
+
+	/**
+	 * Define the required plugin constants
+	 *
+	 * @return void
+	 */
+	public function define_constants() {
+		$this->define( 'HTCONTACTFORM_BLOCK_FILE', __FILE__ );
+		$this->define( 'HTCONTACTFORM_BLOCK_PATH', __DIR__ );
+		$this->define( 'HTCONTACTFORM_BLOCK_URL', plugins_url( '', HTCONTACTFORM_BLOCK_FILE ) );
+	}
+
+
+	/**
+     * Define constant if not already set
+     *
+     * @param  string $name
+     * @param  string|bool $value
+     * @return type
+     */
+    private function define( $name, $value ) {
+        if ( ! defined( $name ) ) {
+            define( $name, $value );
+        }
+    }
 
 	public function render_content($attr){
 
@@ -112,7 +139,7 @@ class Contactform_Block
 						<?php echo $block_uniqueid; ?>{
 							<?php echo $this->dimentation($attr,'areaMargin','','margin'); ?>
 						}
-						<?php echo $block_uniqueid; ?> .wpcf7 input:not([type=checkbox],[type=submit]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
+						<?php echo $block_uniqueid; ?> .wpcf7 input:not([type="checkbox"]):not([type="submit"]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 							<?php echo $this->generate_css($attr,'inputBackground','','background'); ?>
 							<?php echo $this->generate_css($attr,'inputTextColor','','color'); ?>
 							<?php echo $this->dimentation($attr,'inputPadding','','padding'); ?>
@@ -151,7 +178,7 @@ class Contactform_Block
 							<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								height: <?php echo $attr['textAreaHight']['desktop'];?>px;
 							}
-							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type=checkbox],[type=submit]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
+							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type="checkbox"]):not([type="submit"]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								<?php echo $this->generate_css($attr,'inputTextSize','desktop','font-size'); ?>
 							}
 							<?php echo $block_uniqueid; ?> .wpcf7 label{
@@ -178,7 +205,7 @@ class Contactform_Block
 							<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								height: <?php echo $attr['textAreaHight']['laptop'];?>px;
 							}
-							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type=checkbox],[type=submit]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
+							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type="checkbox"]):not([type="submit"]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								<?php echo $this->generate_css($attr,'inputTextSize','laptop','font-size'); ?>
 							}
 							<?php echo $block_uniqueid; ?> .wpcf7 label{
@@ -205,7 +232,7 @@ class Contactform_Block
 							<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								height: <?php echo $attr['textAreaHight']['tablet'];?>px;
 							}
-							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type=checkbox],[type=submit]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
+							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type="checkbox"]):not([type="submit"]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								<?php echo $this->generate_css($attr,'inputTextSize','tablet','font-size'); ?>
 							}
 							<?php echo $block_uniqueid; ?> .wpcf7 label{
@@ -232,7 +259,7 @@ class Contactform_Block
 							<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								height: <?php echo $attr['textAreaHight']['mobile'];?>px;
 							}
-							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type=checkbox],[type=submit]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
+							<?php echo $block_uniqueid; ?> .wpcf7 input:not([type="checkbox"]):not([type="submit"]),<?php echo $block_uniqueid; ?> .wpcf7 textarea{
 								<?php echo $this->generate_css($attr,'inputTextSize','mobile','font-size'); ?>
 							}
 							<?php echo $block_uniqueid; ?> .wpcf7 label{

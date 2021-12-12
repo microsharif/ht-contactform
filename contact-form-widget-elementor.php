@@ -7,7 +7,7 @@
  * Author URI:  https://profiles.wordpress.org/htplugins/#content-plugins
  * Version:     1.1.0
  * License:     GPL2
- * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: ht-contactform
  * Domain Path: /languages
  * Elementor tested up to: 3.4.3
@@ -30,7 +30,7 @@ if( is_plugin_active( 'contact-form-7/wp-contact-form-7.php' ) ){
     }
     add_action('elementor/widgets/widgets_registered','htcontactform_elementor_widgets');
 
-    include( HTCONTACTFORM_PL_PATH.'blocks/src/ht-contactform-block/block-init.php' );
+    include( HTCONTACTFORM_PL_PATH.'blocks/block-init.php' );
     include( HTCONTACTFORM_PL_PATH.'include/class/Api.php' );
 
 }
@@ -85,12 +85,14 @@ if ( ( htcontactform_is_plugins_active( 'extension-for-cf7-pro/cf7-extensions-pr
 
 function htcontactform_redirection_page( $plugin ){
     if( plugin_basename( __FILE__ ) == $plugin ){
-        if ( ( htcontactform_is_plugins_active( 'extension-for-cf7-pro/cf7-extensions-pro.php' ) && is_plugin_inactive( 'extension-for-cf7-pro/cf7-extensions-pro.php' ) ) || ! htcontactform_is_plugins_active( 'extension-for-cf7-pro/cf7-extensions-pro.php' ) ){
-            wp_redirect( admin_url("admin.php?page=htcontact-form") );
-        }else{
-            wp_redirect( admin_url("admin.php?page=ht-contactform_extensions") );
+        if( is_plugin_active( 'contact-form-7/wp-contact-form-7.php' ) ){
+            if ( ( htcontactform_is_plugins_active( 'extension-for-cf7-pro/cf7-extensions-pro.php' ) && is_plugin_inactive( 'extension-for-cf7-pro/cf7-extensions-pro.php' ) ) || ! htcontactform_is_plugins_active( 'extension-for-cf7-pro/cf7-extensions-pro.php' ) ){
+                wp_redirect( admin_url("admin.php?page=htcontact-form") );
+            }else{
+                wp_redirect( admin_url("admin.php?page=ht-contactform_extensions") );
+            }
+            die();
         }
-        die();
     }
 }
 add_action( 'activated_plugin', 'htcontactform_redirection_page' );

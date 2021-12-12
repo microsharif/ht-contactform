@@ -1,15 +1,19 @@
 {
-  "name": "ht-contactform-block-cgb-guten-block",
+  "name": "blocks",
   "version": "1.0.0",
-  "private": true,
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "cgb-scripts start",
-    "build": "cgb-scripts build",
-    "eject": "cgb-scripts eject"
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@wordpress/scripts": "19.2.2"
   },
   "dependencies": {
-    "@wordpress/server-side-render": "^3.0.2",
-    "@wordpress/url": "^3.2.2",
-    "cgb-scripts": "1.23.1"
+    "classnames": "^2.3.1"
   }
 }

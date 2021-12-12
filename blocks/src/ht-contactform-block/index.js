@@ -1,7 +1,3 @@
-//Import CSS.
-import './editor.scss';
-import './style.scss';
-
 /**
  * Internal dependencies
  */
